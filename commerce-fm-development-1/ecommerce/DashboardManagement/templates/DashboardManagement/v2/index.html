@@ -1,0 +1,286 @@
+{% extends "DashboardManagement/v2/Partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="content-header">
+</section>
+<div class="content">
+    {% if messages %}
+        {% include 'DashboardManagement/v2/Partials/notification.html' %}
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-3 col-xs-6">
+          <div class="small-box bg-aqua">
+            <div class="inner">
+              <h3>{{orders_count}}</h3>
+              <p>New Orders</p>
+            </div>
+            <div class="icon">
+              <i class="fa fa-shopping-cart"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-xs-6">
+          <div class="small-box bg-yellow">
+            <div class="inner">
+              <h3>{{new_customers}}</h3>
+              <p>New Customer</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-person-add"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-xs-6">
+          <div class="small-box bg-green">
+            <div class="inner">
+              <h3>{{users}}</h3>
+              <p>Dashboard User</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-pie-graph"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-red">
+              <div class="inner">
+                <h3>{{total_products}}</h3>
+                <p>Total Products</p>
+              </div>
+              <div class="icon">
+                <i class="ion ion-bag"></i>
+              </div>
+              <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+          </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        {% if not hasRefer and not request.user.is_superuser %}
+          {% include "DashboardManagement/v2/Views/ReferView/joinReferal.html" %}
+        {% endif %}
+      </div>
+    </div>
+    {% if referCode and referReward and not request.user.is_superuser %}
+      {% include 'DashboardManagement/v2/Views/ReferView/referAnalysis.html' %}
+    {% endif %}
+    <div class="row">
+      {% if offers %}
+      <div class="col-md-6">
+          <div class="box box-success">
+            <div class="box-header">
+              <i class="fa fa-comments-o"></i>
+
+              <h3 class="box-title">Hey, Special Offers Alert</h3>
+
+              <div class="box-tools pull-right">
+                  <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                  </button>
+              </div>
+            </div>
+            <div class="box-body">
+              <h4>{{first_offers.title|title}}</h4>
+              <div class="banner-index-img">
+                <img src="{{first_offers.small_banner_image.url}}" alt="{{first_offers.title}}" />
+              </div>
+            </div>
+            <div class="box-footer">
+              <div class="input-group">
+                <a href="{% url 'vendor-offers' %}">View All</a>
+              </div>
+            </div>
+          </div>
+      </div>
+      {% endif %}
+      {% if new_category_request %}
+      <div class="col-md-6">
+        <div class="box box-info">
+          <div class="box-header with-border">
+            <h3 class="box-title">New Category Request</h3>
+
+            <div class="box-tools pull-right">
+              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+            </div>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body">
+            <div class="table-responsive table-xs" style="max-height: 250px;">
+              <table class="table no-margin">
+                <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>User</th>
+                  <th>Category Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for data in new_category_request %}
+                  <tr>
+                    <td><a href="#!" data-toggle="modal" data-target="#modal-request-category{{forloop.counter}}">{{data.vendor.organizationName}}</a></td>
+                    <td>{% if data.user.first_name %}{{data.user.first_name}}{% else %} ---- {% endif %}</td>
+                    <td><span class="label label-success">{{data.categoryName|title}}</span></td>
+                  </tr>
+                  <div class="modal fade" id="modal-request-category{{forloop.counter}}">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span></button>
+                          <h4 class="modal-title">New Request</h4>
+                        </div>
+                        <div class="modal-body">
+                          <p><b>By:</b> {{data.vendor.organizationName}} {% if data.user.first_name %}({{data.user.first_name}}){% endif %}</p>
+                          <p><b>Category Name:</b> {{data.categoryName|title}}</p>
+                          <p>{% if data.describe %}<b>Description:</b> {{data.describe}}{% endif %}</p>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+                          <form method="POST" action="{% url 'category-request-delete' %}">
+                            {% csrf_token %}
+                            <input type="hidden" value="{{data.id}}" name="newId"/>
+                            <button type="submit" class="btn btn-danger">DELETE</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="box-footer clearfix">
+            <a href="{% url 'category-add' %}" class="btn btn-sm btn-info btn-flat pull-left">Add New Category</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Effective Marketing</h3>
+
+            <div class="box-tools pull-right">
+              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="chart">
+              {% if market and market_count %}
+                <canvas id="barChart" style="height:230px"></canvas>
+              {% else %}
+                No Response Till Now
+              {% endif %}
+            </div>
+          </div>
+          <!-- /.box-body -->
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block js %}
+<script src="{% static 'DashboardManagement/v2/bower_components/chart.js/Chart.js' %}"></script>
+<script>
+  function copyToClipBoard(){
+      let copyText = document.getElementById("referUrl");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+      document.execCommand("copy");
+  }
+
+  $(function () {
+    'use strict';
+    var myChartOptions = {
+      showScale               : true,
+      scaleShowGridLines      : false,
+      scaleGridLineColor      : 'rgba(0,0,0,.05)',
+      scaleGridLineWidth      : 1,
+      scaleShowHorizontalLines: true,
+      scaleShowVerticalLines  : true,
+      bezierCurve             : true,
+      bezierCurveTension      : 0.3,
+      pointDot                : false,
+      pointDotRadius          : 4,
+      pointDotStrokeWidth     : 1,
+      pointHitDetectionRadius : 20,
+      datasetStroke           : true,
+      datasetStrokeWidth      : 2,
+      datasetFill             : true,
+      maintainAspectRatio     : true,
+      responsive              : true
+    };
+    {% if referCode and referReward and not request.user.is_superuser %}
+    var salesChartCanvas = $('#salesChart').get(0).getContext('2d');
+    var salesChart       = new Chart(salesChartCanvas);
+    var salesChartData = {
+      labels  : ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      datasets: [
+        {
+          label               : 'Electronics',
+          fillColor           : 'rgb(210, 214, 222)',
+          strokeColor         : 'rgb(210, 214, 222)',
+          pointColor          : 'rgb(210, 214, 222)',
+          pointStrokeColor    : '#c1c7d1',
+          pointHighlightFill  : '#fff',
+          pointHighlightStroke: 'rgb(220,220,220)',
+          data                : [65, 59, 80, 81, 56, 55, 40]
+        },
+        {
+          label               : 'Digital Goods',
+          fillColor           : 'rgba(60,141,188,0.9)',
+          strokeColor         : 'rgba(60,141,188,0.8)',
+          pointColor          : '#3b8bba',
+          pointStrokeColor    : 'rgba(60,141,188,1)',
+          pointHighlightFill  : '#fff',
+          pointHighlightStroke: 'rgba(60,141,188,1)',
+          data                : [28, 48, 40, 19, 86, 27, 90]
+        }
+      ]
+    };
+    salesChart.Line(salesChartData, myChartOptions);
+    {% endif %}
+    
+
+    // Marketing Bar Chart
+    let market = {{market|safe}};
+    let marketCount = {{market_count|safe}};
+    var areaChartData = {
+      labels: market,
+      datasets: [
+        {
+          fillColor           : 'rgba(60,141,188,0.9)',
+          strokeColor         : 'rgba(60,141,188,0.8)',
+          pointColor          : '#3b8bba',
+          pointStrokeColor    : 'rgba(60,141,188,1)',
+          pointHighlightFill  : '#fff',
+          pointHighlightStroke: 'rgba(60,141,188,1)',
+          data                : marketCount
+        }
+      ]
+    }
+    var barChartCanvas = $('#barChart').get(0).getContext('2d')
+    var barChart = new Chart(barChartCanvas)
+    var barChartCanvas                   = $('#barChart').get(0).getContext('2d')
+    var barChart                         = new Chart(barChartCanvas)
+    var barChartData                     = areaChartData
+    barChartData.datasets[0].fillColor   = '#00a65a'
+    barChartData.datasets[0].strokeColor = '#00a65a'
+    barChartData.datasets[0].pointColor  = '#00a65a'
+
+    myChartOptions.datasetFill = false
+    barChart.Bar(barChartData, myChartOptions)
+  });
+</script>
+{% endblock js %}
